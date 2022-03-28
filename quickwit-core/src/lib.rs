@@ -28,19 +28,23 @@
 
 mod index;
 
-pub use index::{
-    clean_split_cache, create_index, delete_index, garbage_collect_index, get_cache_path,
-    reset_index,
-};
+pub use index::{clean_split_cache, get_cache_path, IndexService};
 
 #[cfg(test)]
 mod tests {
     use std::path::Path;
 
+    use quickwit_config::{IndexConfig, IndexingSettings, SearchSettings};
     use quickwit_indexing::{FileEntry, TestSandbox};
+    use quickwit_metastore::quickwit_metastore_uri_resolver;
+    use quickwit_storage::StorageUriResolver;
+
+    use crate::IndexService;
+
+    const METASTORE_URI: &str = "ram://quickwit-test-indexes";
 
     #[tokio::test]
-    async fn test_file_entry_from_split() -> anyhow::Result<()> {
+    async fn test_file_entry_from_split_and_index_delete() -> anyhow::Result<()> {
         quickwit_common::setup_logging_for_tests();
         let index_id = "test-index";
         let doc_mapping_yaml = r#"
@@ -73,6 +77,50 @@ mod tests {
                 .await?;
             assert_eq!(split_num_bytes, file_entry.file_size_in_bytes);
         }
+        // Now delete the index.
+        let index_service = IndexService::new(
+            test_sandbox.metastore(),
+            StorageUriResolver::for_test(),
+            "".to_string(),
+        );
+        let deleted_file_entries = index_service.delete_index(index_id, false).await?;
+        assert_eq!(deleted_file_entries.len(), 1);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_index_without_index_uri() -> anyhow::Result<()> {
+        quickwit_common::setup_logging_for_tests();
+        let index_id = "test-index-no-index-uri";
+        let doc_mapping_yaml = r#"
+            field_mappings:
+              - name: title
+                type: text
+        "#;
+        let index_config = IndexConfig {
+            version: 0,
+            index_id: index_id.to_string(),
+            index_uri: None,
+            doc_mapping: serde_yaml::from_str(doc_mapping_yaml)?,
+            indexing_settings: IndexingSettings::default(),
+            search_settings: SearchSettings::default(),
+            sources: Vec::new(),
+        };
+        let metastore = quickwit_metastore_uri_resolver()
+            .resolve(METASTORE_URI)
+            .await?;
+        let storage_resolver = StorageUriResolver::for_test();
+        let index_service = IndexService::new(
+            metastore,
+            storage_resolver,
+            "ram://test-storage-indexes".to_string(),
+        );
+        let index_metadata = index_service.create_index(index_config).await?;
+        assert_eq!(index_metadata.index_id, index_id);
+        assert_eq!(
+            index_metadata.index_uri,
+            "ram://test-storage-indexes/test-index-no-index-uri"
+        );
         Ok(())
     }
 }
