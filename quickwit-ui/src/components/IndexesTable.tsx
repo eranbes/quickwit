@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 import NumberFormat from "react-number-format";
 
 const IndexesTable = ({ indexesMetadata }: Readonly<{indexesMetadata: IndexMetadata[]}>) => {
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   const handleClick = function(indexId: string) {
     navigate(`/indexes/${indexId}`);
   }
@@ -58,7 +58,7 @@ const IndexesTable = ({ indexesMetadata }: Readonly<{indexesMetadata: IndexMetad
               <TableCell align="left">{indexMetadata.index_uri}</TableCell>
               <TableCell align="left">{ dayjs.unix(indexMetadata.create_timestamp).format("YYYY/MM/DD HH:MM") }</TableCell>
               <TableCell align="left">{ dayjs.unix(indexMetadata.update_timestamp).format("YYYY/MM/DD HH:MM") }</TableCell>
-              <TableCell align="left">{ indexMetadata.sources.length }</TableCell>
+              <TableCell align="left">{ indexMetadata.sources?.length }</TableCell>
               <TableCell align="left">{ indexMetadata.num_bytes / 1000000 } MB </TableCell>
               <TableCell align="left"><NumberFormat value={indexMetadata.num_docs} displayType={'text'} thousandSeparator={true} /></TableCell>
               <TableCell align="left">{ indexMetadata.num_splits }</TableCell>

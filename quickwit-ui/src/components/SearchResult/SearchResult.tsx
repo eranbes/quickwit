@@ -30,14 +30,14 @@ function HitCount({searchResponse}: {searchResponse: SearchResponse}) {
       <Typography variant="body2" color="textSecondary">
         <NumberFormat
           displayType="text"
-          value={searchResponse.count}
+          value={searchResponse.num_hits}
           thousandSeparator=","
         />{" "}
         hits found in&nbsp;
         <NumberFormat
           decimalScale={2}
           displayType="text"
-          value={searchResponse.numMicrosecs / 1000000}
+          value={searchResponse.elapsed_time_micros / 1000000}
           thousandSeparator=","
         />{" "}
         seconds

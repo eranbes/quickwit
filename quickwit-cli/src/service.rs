@@ -54,7 +54,7 @@ impl RunCliCommand {
             .map(Uri::try_new)
             .expect("`config` is a required arg.")?;
         let data_dir_path = matches.value_of("data-dir").map(PathBuf::from);
-        let services: HashSet<QuickwitService> =
+        let mut services: HashSet<QuickwitService> =
             if let Some(service_str) = matches.value_of("service") {
                 let service = QuickwitService::try_from(service_str)?;
                 iter::once(service).collect()
@@ -63,6 +63,7 @@ impl RunCliCommand {
                     .into_iter()
                     .collect()
             };
+        services.insert(QuickwitService::IndexManagement);
         Ok(RunCliCommand {
             config_uri,
             data_dir_path,
@@ -105,7 +106,7 @@ mod tests {
                 data_dir_path: None,
                 services
             })
-            if config_uri == expected_config_uri && services.len() == 2
+            if config_uri == expected_config_uri && services.len() == 3
         ));
         Ok(())
     }
@@ -129,7 +130,7 @@ mod tests {
                 data_dir_path: None,
                 services
             })
-            if config_uri == expected_config_uri && services.len() == 1 && services.iter().cloned().next().unwrap() == QuickwitService::Indexer
+            if config_uri == expected_config_uri && services.len() == 2 && services.iter().cloned().next().unwrap() == QuickwitService::Indexer
         ));
         Ok(())
     }
@@ -152,7 +153,7 @@ mod tests {
                 data_dir_path: None,
                 services
             })
-            if config_uri == expected_config_uri && services.len() == 1 && services.contains(&QuickwitService::Indexer)
+            if config_uri == expected_config_uri && services.len() == 2 && services.contains(&QuickwitService::Indexer)
         ));
         Ok(())
     }

@@ -68,7 +68,7 @@ function SearchView() {
     prevIndexIdRef.current = index === null ? null : index.metadata.index_id;
   }, [index]);
   useEffect(() => {
-    if (searchRequest.indexId === null || searchRequest.indexId === undefined) {
+    if (searchRequest.indexId === null || searchRequest.indexId === undefined || searchRequest.indexId === '') {
       return;
     }
     if (index !== null && index.metadata.index_id === searchRequest.indexId) {

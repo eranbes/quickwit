@@ -44,7 +44,7 @@ export type Entry = {
 
 function getValueFromPath(path: string[], raw_doc: RawDoc): any {
   let value = raw_doc;
-  for (let key of path) {
+  for (const key of path) {
     if (key in value) {
       value = value[key];
     } else {
@@ -58,7 +58,7 @@ export function flattenEntries(doc_mapping: DocMapping, raw_doc: RawDoc): Entry[
   const flatten_fields = getFlattenFields(doc_mapping.field_mappings);
   const records = [];
 
-  for (let flatten_field of flatten_fields) {
+  for (const flatten_field of flatten_fields) {
     const value = getValueFromPath(flatten_field.path, raw_doc);
     if (value !== null) {
       records.push({key: flatten_field.name, value: value});
@@ -68,10 +68,10 @@ export function flattenEntries(doc_mapping: DocMapping, raw_doc: RawDoc): Entry[
 }
 
 function getFlattenFields(field_mappings: FieldMapping[]): FlattenField[] {
-  let fields: FlattenField[] = [];
-  for (let field_mapping of field_mappings) {
+  const fields: FlattenField[] = [];
+  for (const field_mapping of field_mappings) {
     if (field_mapping.type === 'object' && field_mapping.field_mappings !== undefined) {
-      for (let child_field of getFlattenFields(field_mapping.field_mappings)) {
+      for (const child_field of getFlattenFields(field_mapping.field_mappings)) {
         fields.push({name: field_mapping.name + '.' + child_field.name, path: [field_mapping.name].concat(child_field.path), type: child_field.type})
       }
     } else {
@@ -91,7 +91,7 @@ export function guessTimeUnit(index: Index): TimeUnit {
   if (index.splits.length === 0 || index.splits[0] === undefined || index.splits[0].time_range === null) {
     return TimeUnit.MILLI_SECOND;
   }
-  let range_start_values = index.splits.map(split => split.time_range === null ? 0 : split.time_range.start);
+  const range_start_values = index.splits.map(split => split.time_range === null ? 0 : split.time_range.start);
   const time_range_start_max = Math.max(...range_start_values);
   // We expect a split time range to be between year between 1971 and 2070. 
   const seconds_in_one_hundred_years = 3600 * 24 * 365 * 100;
@@ -135,9 +135,10 @@ export const EMPTY_SEARCH_REQUEST: SearchRequest = {
 }
 
 export type SearchResponse = {
-  count: number;
+  num_hits: number;
   hits: Array<RawDoc>;
-  numMicrosecs: number;
+  elapsed_time_micros: number;
+  errors: Array<any> | undefined;
 }
 
 export type IndexMetadata = {
@@ -147,7 +148,7 @@ export type IndexMetadata = {
   doc_mapping: DocMapping;
   indexing_settings: IndexingSettings;
   search_settings: object;
-  sources: object[];
+  sources: object[] | undefined;
   create_timestamp: number;
   update_timestamp: number;
   num_docs: number;

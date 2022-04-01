@@ -40,7 +40,7 @@ height: 100%;
 `;
 
 function IndexView() {
-  let { indexId } = useParams();
+  const { indexId } = useParams();
   const [loading, setLoading] = useState(false)
   const [, setLoadingError] = useState<ErrorResult | null>(null)
   const [tabIndex, setTabIndex] = useState('1');
